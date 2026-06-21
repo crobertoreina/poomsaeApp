@@ -51,14 +51,8 @@
 </head>
 <body>
     <div class="app-container">
-        <div class="logo-area">
-            <div class="logo-icon"><span>🥋</span></div>
-            <h1>Poomsae</h1>
-            <p>Sistema de Evaluaci&oacute;n</p>
-        </div>
-
-        <div class="card">
-            <h2>Iniciar Sesi&oacute;n</h2>
+        <div class="card" style="margin-top:20px;">
+            <h2>Taekwondo</h2>
 
             <?php if (!empty($error)): ?>
                 <div class="error-msg"><?= htmlspecialchars($error) ?></div>
