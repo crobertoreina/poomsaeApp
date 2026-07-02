@@ -37,7 +37,7 @@ class Controller
     protected function requireAuth(): void
     {
         if (session_status() === PHP_SESSION_NONE) session_start();
-        if (empty($_SESSION['escuela_id'])) {
+        if (!array_key_exists('escuela_id', $_SESSION) || $_SESSION['escuela_id'] === null || $_SESSION['escuela_id'] === '') {
             $this->redirect('/login');
         }
     }

@@ -11,23 +11,70 @@ class Participante extends Model
     public static function crear(array $data): bool
     {
         $db = self::db();
-        $nombre = $data['nombre'];
-        $apellido = $data['apellido'];
-        $sexo = $data['sexo'] ?? null;
-        $fechaNac = $data['fecha_nacimiento'] ?? null;
-        $grado = $data['grado'] ?? null;
-        $cinturon = $data['cinturon'] ?? null;
-        $idCinturon = $data['id_cinturon'] ?? null;
-        $correo = $data['correo'] ?? null;
-        $telefono = $data['telefono'] ?? null;
-        $ciudad = $data['ciudad'] ?? null;
-        $idEscuela = $data['id_escuela'];
-        $stmt = $db->prepare("INSERT INTO participantes (nombre, apellido, sexo, fecha_nacimiento, grado, cinturon, id_cinturon, correo, telefono, ciudad, id_escuela) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-        $stmt->bind_param('ssssssisssi',
-            $nombre, $apellido, $sexo, $fechaNac,
-            $grado, $cinturon, $idCinturon,
-            $correo, $telefono, $ciudad, $idEscuela
+        $stmt = $db->prepare("INSERT INTO participantes 
+            (nombre, apellido, sexo, fecha_nacimiento, edad, peso, estatura, grado, cinturon, id_cinturon, correo, telefono, ciudad, categoria, id_escuela) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        $stmt->bind_param('ssssiddssissssi',
+            $data['nombre'],
+            $data['apellido'],
+            $data['sexo'],
+            $data['fecha_nacimiento'],
+            $data['edad'],
+            $data['peso'],
+            $data['estatura'],
+            $data['grado'],
+            $data['cinturon'],
+            $data['id_cinturon'],
+            $data['correo'],
+            $data['telefono'],
+            $data['ciudad'],
+            $data['categoria'],
+            $data['id_escuela']
         );
         return $stmt->execute();
+    }
+
+    public static function actualizar(int $id, array $data): bool
+    {
+        $db = self::db();
+        $stmt = $db->prepare("UPDATE participantes SET 
+            nombre=?, apellido=?, sexo=?, fecha_nacimiento=?, edad=?, peso=?, estatura=?, 
+            grado=?, cinturon=?, id_cinturon=?, correo=?, telefono=?, ciudad=?, categoria=?
+            WHERE id=? AND id_escuela=?");
+        $stmt->bind_param('ssssiddssissssii',
+            $data['nombre'],
+            $data['apellido'],
+            $data['sexo'],
+            $data['fecha_nacimiento'],
+            $data['edad'],
+            $data['peso'],
+            $data['estatura'],
+            $data['grado'],
+            $data['cinturon'],
+            $data['id_cinturon'],
+            $data['correo'],
+            $data['telefono'],
+            $data['ciudad'],
+            $data['categoria'],
+            $id,
+            $data['id_escuela']
+        );
+        return $stmt->execute();
+    }
+
+    public static function listarPorEscuela(int $idEscuela): array
+    {
+        $db = self::db();
+        $stmt = $db->prepare("SELECT id, nombre, apellido, sexo, fecha_nacimiento, edad, peso, estatura, grado, cinturon, correo, ciudad, categoria FROM participantes WHERE id_escuela=? ORDER BY apellido, nombre");
+        $stmt->bind_param('i', $idEscuela);
+        $stmt->execute();
+        return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    }
+
+    public static function listarCinturones(): array
+    {
+        $db = self::db();
+        $r = $db->query("SELECT idCinturon, nombre, colorHex FROM cinturon ORDER BY orden");
+        return $r ? $r->fetch_all(MYSQLI_ASSOC) : [];
     }
 }

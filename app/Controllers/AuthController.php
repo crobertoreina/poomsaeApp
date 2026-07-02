@@ -3,6 +3,7 @@ namespace App\Controllers;
 
 use App\Core\Controller;
 use App\Models\Escuela;
+use App\Models\Juez;
 
 class AuthController extends Controller
 {
@@ -17,21 +18,32 @@ class AuthController extends Controller
         $username = trim($this->getParam('username', ''));
         $password = $this->getParam('password', '');
 
+        // Try school login first
         $escuela = Escuela::findByCorreo($username) ?: Escuela::findByUser($username);
-
         if ($escuela && password_verify($password, $escuela['pass'])) {
             if (!$escuela['estado']) {
                 $error = 'Cuenta desactivada. Contacta al administrador.';
                 $this->view('login/index', ['error' => $error]);
                 return;
             }
+            $_SESSION['user_level'] = 1;
             $_SESSION['escuela_id'] = $escuela['id'];
             $_SESSION['escuela_nombre'] = $escuela['nombre'];
             $_SESSION['escuela_siglas'] = $escuela['siglas'];
             $this->redirect('/dashboard');
-        } else {
-            $this->view('login/index', ['error' => 'Credenciales incorrectas.']);
         }
+
+        // Try judge login
+        $juez = Juez::findByUser($username);
+        if ($juez && password_verify($password, $juez['pass'])) {
+            $_SESSION['user_level'] = 2;
+            $_SESSION['juez_id'] = $juez['id'];
+            $_SESSION['juez_nombre'] = $juez['nombre'] . ' ' . $juez['apellido'];
+            $_SESSION['escuela_id'] = (int)($juez['id_escuela'] ?? 0);
+            $this->redirect('/evaluacion');
+        }
+
+        $this->view('login/index', ['error' => 'Credenciales incorrectas.']);
     }
 
     public function logout(): void
